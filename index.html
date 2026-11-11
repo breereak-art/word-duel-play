@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Play Word Duel</title>
+<style>
+:root{color-scheme:light;font:17px system-ui;color:#152942;background:#f7f5eb}body{margin:0;min-height:100svh;display:grid;place-items:center}main{box-sizing:border-box;width:min(92vw,32rem);padding:clamp(24px,7vw,52px);border:2px solid #152942;background:#dcf69b;border-radius:22px;box-shadow:5px 5px #152942}h1{font:900 clamp(48px,12vw,76px)/.9 Georgia,serif;letter-spacing:-.07em;margin:0 0 24px}p{line-height:1.45}.button{display:inline-block;background:#182b42;color:white;border-radius:8px;padding:12px 18px;text-decoration:none;font-weight:700}.button[hidden]{display:none}small{display:block;margin-top:20px}
+</style></head><body><main><h1>Word Duel</h1><p id="status" role="status">Finding the game…</p><a class="button" id="play" target="_blank" rel="noopener noreferrer" hidden>Play Word Duel ↗</a><small>Share or bookmark this page. It follows the game when its address changes.</small></main>
+<script>
+const button=document.querySelector('#play'),statusLine=document.querySelector('#status');
+let checking=false;
+async function update(open=false){
+ if(checking)return;
+ checking=true;
+ // Open synchronously from the user's click so mobile browsers allow the game tab.
+ const tab=open?window.open('about:blank','_blank'):null;
+ if(tab)tab.opener=null;
+ try{
+  const res=await fetch('https://api.github.com/repos/breereak-art/word-duel-play/contents/live.json?ref=connection&t='+Date.now(),{cache:'no-store',signal:AbortSignal.timeout(9000)});
+  if(!res.ok)throw Error();
+  const {url}=JSON.parse(atob((await res.json()).content));
+  if(typeof url!=='string'||!/^https:\/\/(?:[a-z0-9]+\.lhr\.life|word-duel-club\.rogue-chasmosaurus\.workers\.dev)$/.test(url))throw Error();
+  statusLine.textContent='Create a private room, then send your opponent the room code.';
+  button.href=url;button.hidden=false;
+  if(open){if(tab)tab.location.replace(url);else location.assign(url);}
+ }catch{if(tab)tab.close();button.hidden=true;statusLine.textContent='The game connection is unavailable. This page will check again automatically.';}
+ finally{checking=false;}
+}
+button.onclick=e=>{e.preventDefault();update(true)};
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)update()});
+update();setInterval(()=>{if(!document.hidden)update()},60000);
+</script></body></html>
