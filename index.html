@@ -13,9 +13,9 @@ async function update(open=false){
  const tab=open?window.open('about:blank','_blank'):null;
  if(tab)tab.opener=null;
  try{
-  const res=await fetch('https://api.github.com/repos/breereak-art/word-duel-play/contents/live.json?ref=connection&t='+Date.now(),{cache:'no-store',signal:AbortSignal.timeout(9000)});
+  const res=await fetch('https://raw.githubusercontent.com/breereak-art/word-duel-play/connection/live.json?t='+Date.now(),{cache:'no-store',signal:AbortSignal.timeout(9000)});
   if(!res.ok)throw Error();
-  const {url}=JSON.parse(atob((await res.json()).content));
+  const {url}=await res.json();
   if(typeof url!=='string'||!/^https:\/\/(?:[a-z0-9]+\.lhr\.life|word-duel-club\.rogue-chasmosaurus\.workers\.dev)$/.test(url))throw Error();
   statusLine.textContent='Create a private room, then send your opponent the room code.';
   button.href=url;button.hidden=false;
@@ -23,7 +23,7 @@ async function update(open=false){
  }catch{if(tab)tab.close();button.hidden=true;statusLine.textContent='The game connection is unavailable. This page will check again automatically.';}
  finally{checking=false;}
 }
-button.onclick=e=>{e.preventDefault();update(true)};
+
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)update()});
 update();setInterval(()=>{if(!document.hidden)update()},60000);
 </script></body></html>
